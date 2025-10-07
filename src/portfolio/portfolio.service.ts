@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { isPrismaErrorWithCode } from '../prisma/prisma-error.util';
 import {
   CreatePortfolioDto,
   UpdatePortfolioDto,
@@ -55,7 +56,7 @@ export class PortfolioService {
       });
       return this.mapToResponseDto(portfolio);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Portfolio with ID ${id} not found`);
       }
       throw error;
@@ -68,7 +69,7 @@ export class PortfolioService {
         where: { id },
       });
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Portfolio with ID ${id} not found`);
       }
       throw error;

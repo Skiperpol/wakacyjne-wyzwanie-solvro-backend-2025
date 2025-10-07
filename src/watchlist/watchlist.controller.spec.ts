@@ -4,7 +4,6 @@ import { WatchlistService } from './watchlist.service';
 
 describe('WatchlistController', () => {
   let controller: WatchlistController;
-  let watchlistService: WatchlistService;
 
   const mockWatchlist = {
     id: '1',
@@ -49,7 +48,6 @@ describe('WatchlistController', () => {
     }).compile();
 
     controller = module.get<WatchlistController>(WatchlistController);
-    watchlistService = module.get<WatchlistService>(WatchlistService);
   });
 
   it('should be defined', () => {
@@ -68,7 +66,7 @@ describe('WatchlistController', () => {
       const result = await controller.createWatchlist(createWatchlistDto);
 
       expect(result).toEqual(mockWatchlist);
-      expect(watchlistService.createWatchlist).toHaveBeenCalledWith(
+      expect(mockWatchlistService.createWatchlist).toHaveBeenCalledWith(
         createWatchlistDto,
       );
     });
@@ -92,7 +90,7 @@ describe('WatchlistController', () => {
       );
 
       expect(result).toEqual(mockWatchlistItem);
-      expect(watchlistService.createWatchlistItem).toHaveBeenCalledWith(
+      expect(mockWatchlistService.createWatchlistItem).toHaveBeenCalledWith(
         createWatchlistItemDto,
       );
     });

@@ -6,7 +6,6 @@ import { CreatePortfolioDto, UpdatePortfolioDto } from './dto/portfolio.dto';
 
 describe('PortfolioService', () => {
   let service: PortfolioService;
-  let prismaService: PrismaService;
 
   const mockPortfolio = {
     id: 'clx1234567890',
@@ -57,7 +56,6 @@ describe('PortfolioService', () => {
     }).compile();
 
     service = module.get<PortfolioService>(PortfolioService);
-    prismaService = module.get<PrismaService>(PrismaService);
     jest.clearAllMocks();
   });
 
@@ -116,7 +114,9 @@ describe('PortfolioService', () => {
         name: 'JPY Portfolio',
         baseCurrency: 'JPY',
       };
-      mockPrismaService.portfolio.create.mockResolvedValue(mockPortfolioWithDifferentCurrency);
+      mockPrismaService.portfolio.create.mockResolvedValue(
+        mockPortfolioWithDifferentCurrency,
+      );
 
       const result = await service.create(jpyPortfolioDto);
 
@@ -157,11 +157,13 @@ describe('PortfolioService', () => {
       const fkError = new Error('Foreign key constraint failed');
       mockPrismaService.portfolio.create.mockRejectedValue(fkError);
 
-      await expect(service.create({
-        userId: 'non-existent-user',
-        name: 'Test Portfolio',
-        baseCurrency: 'USD',
-      })).rejects.toThrow('Foreign key constraint failed');
+      await expect(
+        service.create({
+          userId: 'non-existent-user',
+          name: 'Test Portfolio',
+          baseCurrency: 'USD',
+        }),
+      ).rejects.toThrow('Foreign key constraint failed');
     });
 
     it('should handle unique constraint violations', async () => {
@@ -176,7 +178,11 @@ describe('PortfolioService', () => {
 
   describe('findAll', () => {
     it('should return all portfolios when portfolios exist', async () => {
-      const portfolios = [mockPortfolio, mockPortfolio2, mockPortfolioWithDifferentCurrency];
+      const portfolios = [
+        mockPortfolio,
+        mockPortfolio2,
+        mockPortfolioWithDifferentCurrency,
+      ];
       mockPrismaService.portfolio.findMany.mockResolvedValue(portfolios);
 
       const result = await service.findAll();
@@ -228,7 +234,9 @@ describe('PortfolioService', () => {
       const result = await service.findByUserId('user-1');
 
       expect(result).toHaveLength(2);
-      expect(result.every(portfolio => portfolio.userId === 'user-1')).toBe(true);
+      expect(result.every((portfolio) => portfolio.userId === 'user-1')).toBe(
+        true,
+      );
       expect(mockPrismaService.portfolio.findMany).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
       });
@@ -404,21 +412,21 @@ describe('PortfolioService', () => {
       const nonExistentId = 'non-existent-id';
       mockPrismaService.portfolio.update.mockRejectedValue({ code: 'P2025' });
 
-      await expect(service.update(nonExistentId, updatePortfolioDto)).rejects.toThrow(
-        NotFoundException,
-      );
-      await expect(service.update(nonExistentId, updatePortfolioDto)).rejects.toThrow(
-        `Portfolio with ID ${nonExistentId} not found`,
-      );
+      await expect(
+        service.update(nonExistentId, updatePortfolioDto),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.update(nonExistentId, updatePortfolioDto),
+      ).rejects.toThrow(`Portfolio with ID ${nonExistentId} not found`);
     });
 
     it('should re-throw other Prisma errors during update', async () => {
       const otherError = new Error('Database constraint violation');
       mockPrismaService.portfolio.update.mockRejectedValue(otherError);
 
-      await expect(service.update(mockPortfolio.id, updatePortfolioDto)).rejects.toThrow(
-        'Database constraint violation',
-      );
+      await expect(
+        service.update(mockPortfolio.id, updatePortfolioDto),
+      ).rejects.toThrow('Database constraint violation');
     });
 
     it('should handle empty update object', async () => {
@@ -473,9 +481,7 @@ describe('PortfolioService', () => {
     });
 
     it('should handle cascade deletion properly', async () => {
-      // Simulate successful deletion even when portfolio has related records
       mockPrismaService.portfolio.delete.mockResolvedValue(mockPortfolio);
-
       await expect(service.remove(mockPortfolio.id)).resolves.not.toThrow();
       expect(mockPrismaService.portfolio.delete).toHaveBeenCalledWith({
         where: { id: mockPortfolio.id },
@@ -485,27 +491,26 @@ describe('PortfolioService', () => {
 
   describe('mapToResponseDto', () => {
     it('should map portfolio data correctly', () => {
-      // Test the private method indirectly through create
       mockPrismaService.portfolio.create.mockResolvedValue(mockPortfolio);
-
-      return service.create({
-        userId: mockPortfolio.userId,
-        name: mockPortfolio.name,
-        baseCurrency: mockPortfolio.baseCurrency,
-      }).then((result) => {
-        expect(result.id).toBe(mockPortfolio.id);
-        expect(result.userId).toBe(mockPortfolio.userId);
-        expect(result.name).toBe(mockPortfolio.name);
-        expect(result.baseCurrency).toBe(mockPortfolio.baseCurrency);
-        expect(result.createdAt).toEqual(mockPortfolio.createdAt);
-        expect(result.updatedAt).toEqual(mockPortfolio.updatedAt);
-      });
+      return service
+        .create({
+          userId: mockPortfolio.userId,
+          name: mockPortfolio.name,
+          baseCurrency: mockPortfolio.baseCurrency,
+        })
+        .then((result) => {
+          expect(result.id).toBe(mockPortfolio.id);
+          expect(result.userId).toBe(mockPortfolio.userId);
+          expect(result.name).toBe(mockPortfolio.name);
+          expect(result.baseCurrency).toBe(mockPortfolio.baseCurrency);
+          expect(result.createdAt).toEqual(mockPortfolio.createdAt);
+          expect(result.updatedAt).toEqual(mockPortfolio.updatedAt);
+        });
     });
   });
 
   describe('integration scenarios', () => {
     it('should handle complete portfolio lifecycle', async () => {
-      // Create
       mockPrismaService.portfolio.create.mockResolvedValue(mockPortfolio);
       const createdPortfolio = await service.create({
         userId: mockPortfolio.userId,
@@ -513,20 +518,25 @@ describe('PortfolioService', () => {
         baseCurrency: mockPortfolio.baseCurrency,
       });
 
-      // Find
       mockPrismaService.portfolio.findUnique.mockResolvedValue(mockPortfolio);
       const foundPortfolio = await service.findOne(createdPortfolio.id);
 
-      // Update
-      const updatedPortfolioData = { ...mockPortfolio, name: 'Updated Portfolio Name', baseCurrency: 'EUR' };
-      mockPrismaService.portfolio.update.mockResolvedValue(updatedPortfolioData);
-      const updatedPortfolio = await service.update(foundPortfolio.id, { 
-        name: 'Updated Portfolio Name', 
-        baseCurrency: 'EUR'
+      const updatedPortfolioData = {
+        ...mockPortfolio,
+        name: 'Updated Portfolio Name',
+        baseCurrency: 'EUR',
+      };
+      mockPrismaService.portfolio.update.mockResolvedValue(
+        updatedPortfolioData,
+      );
+      const updatedPortfolio = await service.update(foundPortfolio.id, {
+        name: 'Updated Portfolio Name',
+        baseCurrency: 'EUR',
       });
 
-      // Delete
-      mockPrismaService.portfolio.delete.mockResolvedValue(updatedPortfolioData);
+      mockPrismaService.portfolio.delete.mockResolvedValue(
+        updatedPortfolioData,
+      );
       await service.remove(updatedPortfolio.id);
 
       expect(createdPortfolio.id).toBe(foundPortfolio.id);
@@ -540,9 +550,11 @@ describe('PortfolioService', () => {
 
     it('should handle concurrent operations', async () => {
       mockPrismaService.portfolio.create.mockResolvedValue(mockPortfolio);
-      mockPrismaService.portfolio.findMany.mockResolvedValue([mockPortfolio, mockPortfolio2]);
+      mockPrismaService.portfolio.findMany.mockResolvedValue([
+        mockPortfolio,
+        mockPortfolio2,
+      ]);
 
-      // Simulate concurrent operations
       const [createdPortfolio, allPortfolios] = await Promise.all([
         service.create({
           userId: mockPortfolio.userId,
@@ -565,13 +577,16 @@ describe('PortfolioService', () => {
       expect(result).toHaveLength(2);
       expect(result[0].name).toBe('My Trading Portfolio');
       expect(result[1].name).toBe('Crypto Portfolio');
-      expect(result.every(portfolio => portfolio.userId === 'user-1')).toBe(true);
+      expect(result.every((portfolio) => portfolio.userId === 'user-1')).toBe(
+        true,
+      );
     });
   });
 
   describe('edge cases and error handling', () => {
     it('should handle very long portfolio names', async () => {
-      const longName = 'This is a very long portfolio name that might exceed normal limits but should still be handled properly by the system without any issues';
+      const longName =
+        'This is a very long portfolio name that might exceed normal limits but should still be handled properly by the system without any issues';
       const longNamePortfolio = { ...mockPortfolio, name: longName };
       mockPrismaService.portfolio.create.mockResolvedValue(longNamePortfolio);
 
@@ -587,7 +602,9 @@ describe('PortfolioService', () => {
     it('should handle special characters in portfolio names', async () => {
       const specialName = 'Portfolio @#$%^&*()_+{}|:"<>?[]\\;\',./';
       const specialNamePortfolio = { ...mockPortfolio, name: specialName };
-      mockPrismaService.portfolio.create.mockResolvedValue(specialNamePortfolio);
+      mockPrismaService.portfolio.create.mockResolvedValue(
+        specialNamePortfolio,
+      );
 
       const result = await service.create({
         userId: mockPortfolio.userId,
@@ -613,8 +630,13 @@ describe('PortfolioService', () => {
 
     it('should handle special currency codes', async () => {
       const specialCurrency = 'XAU'; // Gold
-      const specialCurrencyPortfolio = { ...mockPortfolio, baseCurrency: specialCurrency };
-      mockPrismaService.portfolio.create.mockResolvedValue(specialCurrencyPortfolio);
+      const specialCurrencyPortfolio = {
+        ...mockPortfolio,
+        baseCurrency: specialCurrency,
+      };
+      mockPrismaService.portfolio.create.mockResolvedValue(
+        specialCurrencyPortfolio,
+      );
 
       const result = await service.create({
         userId: mockPortfolio.userId,
@@ -636,11 +658,13 @@ describe('PortfolioService', () => {
       const transactionError = new Error('Transaction rolled back');
       mockPrismaService.portfolio.create.mockRejectedValue(transactionError);
 
-      await expect(service.create({
-        userId: mockPortfolio.userId,
-        name: mockPortfolio.name,
-        baseCurrency: mockPortfolio.baseCurrency,
-      })).rejects.toThrow('Transaction rolled back');
+      await expect(
+        service.create({
+          userId: mockPortfolio.userId,
+          name: mockPortfolio.name,
+          baseCurrency: mockPortfolio.baseCurrency,
+        }),
+      ).rejects.toThrow('Transaction rolled back');
     });
   });
 });

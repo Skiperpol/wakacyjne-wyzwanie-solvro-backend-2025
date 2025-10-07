@@ -4,7 +4,6 @@ import { SessionService } from './session.service';
 
 describe('SessionController', () => {
   let controller: SessionController;
-  let sessionService: SessionService;
 
   const mockSession = {
     id: '1',
@@ -39,7 +38,6 @@ describe('SessionController', () => {
     }).compile();
 
     controller = module.get<SessionController>(SessionController);
-    sessionService = module.get<SessionService>(SessionService);
   });
 
   it('should be defined', () => {
@@ -61,7 +59,7 @@ describe('SessionController', () => {
       const result = await controller.create(createSessionDto);
 
       expect(result).toEqual(mockSession);
-      expect(sessionService.create).toHaveBeenCalledWith(createSessionDto);
+      expect(mockSessionService.create).toHaveBeenCalledWith(createSessionDto);
     });
   });
 
@@ -73,7 +71,7 @@ describe('SessionController', () => {
       const result = await controller.findAll();
 
       expect(result).toEqual(sessions);
-      expect(sessionService.findAll).toHaveBeenCalled();
+      expect(mockSessionService.findAll).toHaveBeenCalled();
     });
 
     it('should return sessions by userId when userId query provided', async () => {
@@ -83,7 +81,7 @@ describe('SessionController', () => {
       const result = await controller.findAll('user1');
 
       expect(result).toEqual(sessions);
-      expect(sessionService.findByUserId).toHaveBeenCalledWith('user1');
+      expect(mockSessionService.findByUserId).toHaveBeenCalledWith('user1');
     });
   });
 
@@ -93,7 +91,7 @@ describe('SessionController', () => {
 
       await controller.removeExpired();
 
-      expect(sessionService.removeExpired).toHaveBeenCalled();
+      expect(mockSessionService.removeExpired).toHaveBeenCalled();
     });
   });
 });

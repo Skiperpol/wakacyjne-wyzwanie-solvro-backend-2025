@@ -4,7 +4,6 @@ import { PositionService } from './position.service';
 
 describe('PositionController', () => {
   let controller: PositionController;
-  let positionService: PositionService;
 
   const mockPosition = {
     id: '1',
@@ -41,7 +40,6 @@ describe('PositionController', () => {
     }).compile();
 
     controller = module.get<PositionController>(PositionController);
-    positionService = module.get<PositionService>(PositionService);
   });
 
   it('should be defined', () => {
@@ -63,7 +61,9 @@ describe('PositionController', () => {
       const result = await controller.create(createPositionDto);
 
       expect(result).toEqual(mockPosition);
-      expect(positionService.create).toHaveBeenCalledWith(createPositionDto);
+      expect(mockPositionService.create).toHaveBeenCalledWith(
+        createPositionDto,
+      );
     });
   });
 
@@ -75,7 +75,7 @@ describe('PositionController', () => {
       const result = await controller.findAll();
 
       expect(result).toEqual(positions);
-      expect(positionService.findAll).toHaveBeenCalled();
+      expect(mockPositionService.findAll).toHaveBeenCalled();
     });
 
     it('should return active positions when status=active', async () => {
@@ -85,7 +85,7 @@ describe('PositionController', () => {
       const result = await controller.findAll('portfolio1', 'active');
 
       expect(result).toEqual(positions);
-      expect(positionService.findActivePositions).toHaveBeenCalledWith(
+      expect(mockPositionService.findActivePositions).toHaveBeenCalledWith(
         'portfolio1',
       );
     });
@@ -103,7 +103,10 @@ describe('PositionController', () => {
       const result = await controller.closePosition('1', 1250.5);
 
       expect(result).toEqual(closedPosition);
-      expect(positionService.closePosition).toHaveBeenCalledWith('1', 1250.5);
+      expect(mockPositionService.closePosition).toHaveBeenCalledWith(
+        '1',
+        1250.5,
+      );
     });
   });
 });

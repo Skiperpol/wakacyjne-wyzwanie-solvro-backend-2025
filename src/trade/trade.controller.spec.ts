@@ -5,7 +5,6 @@ import { TradeStatus, TradeSide, TradeType } from '@prisma/client';
 
 describe('TradeController', () => {
   let controller: TradeController;
-  let tradeService: TradeService;
 
   const mockTrade = {
     id: '1',
@@ -47,7 +46,6 @@ describe('TradeController', () => {
     }).compile();
 
     controller = module.get<TradeController>(TradeController);
-    tradeService = module.get<TradeService>(TradeService);
   });
 
   it('should be defined', () => {
@@ -69,7 +67,7 @@ describe('TradeController', () => {
       const result = await controller.create(createTradeDto);
 
       expect(result).toEqual(mockTrade);
-      expect(tradeService.create).toHaveBeenCalledWith(createTradeDto);
+      expect(mockTradeService.create).toHaveBeenCalledWith(createTradeDto);
     });
   });
 
@@ -86,7 +84,7 @@ describe('TradeController', () => {
       const result = await controller.fillTrade('1', 150.25);
 
       expect(result).toEqual(filledTrade);
-      expect(tradeService.fillTrade).toHaveBeenCalledWith('1', 150.25);
+      expect(mockTradeService.fillTrade).toHaveBeenCalledWith('1', 150.25);
     });
   });
 });

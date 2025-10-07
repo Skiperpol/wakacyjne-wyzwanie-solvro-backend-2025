@@ -7,7 +7,6 @@ import { TradeStatus, TradeSide, TradeType } from '@prisma/client';
 
 describe('TradeService', () => {
   let service: TradeService;
-  let prismaService: PrismaService;
 
   const mockTrade = {
     id: 'clx1234567890',
@@ -59,7 +58,6 @@ describe('TradeService', () => {
     }).compile();
 
     service = module.get<TradeService>(TradeService);
-    prismaService = module.get<PrismaService>(PrismaService);
     jest.clearAllMocks();
   });
 
@@ -199,7 +197,9 @@ describe('TradeService', () => {
       const result = await service.findByPortfolioId('portfolio-1');
 
       expect(result).toHaveLength(2);
-      expect(result.every(trade => trade.portfolioId === 'portfolio-1')).toBe(true);
+      expect(result.every((trade) => trade.portfolioId === 'portfolio-1')).toBe(
+        true,
+      );
       expect(mockPrismaService.trade.findMany).toHaveBeenCalledWith({
         where: { portfolioId: 'portfolio-1' },
       });
@@ -376,21 +376,21 @@ describe('TradeService', () => {
       const nonExistentId = 'non-existent-id';
       mockPrismaService.trade.update.mockRejectedValue({ code: 'P2025' });
 
-      await expect(service.update(nonExistentId, updateTradeDto)).rejects.toThrow(
-        NotFoundException,
-      );
-      await expect(service.update(nonExistentId, updateTradeDto)).rejects.toThrow(
-        `Trade with ID ${nonExistentId} not found`,
-      );
+      await expect(
+        service.update(nonExistentId, updateTradeDto),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.update(nonExistentId, updateTradeDto),
+      ).rejects.toThrow(`Trade with ID ${nonExistentId} not found`);
     });
 
     it('should re-throw other Prisma errors during update', async () => {
       const otherError = new Error('Database constraint violation');
       mockPrismaService.trade.update.mockRejectedValue(otherError);
 
-      await expect(service.update(mockTrade.id, updateTradeDto)).rejects.toThrow(
-        'Database constraint violation',
-      );
+      await expect(
+        service.update(mockTrade.id, updateTradeDto),
+      ).rejects.toThrow('Database constraint violation');
     });
   });
 
@@ -414,7 +414,7 @@ describe('TradeService', () => {
         data: {
           status: TradeStatus.FILLED,
           price: 150.25,
-          filledAt: expect.any(Date),
+          filledAt: expect.any(Date) as unknown as Date,
         },
       });
     });
@@ -464,14 +464,17 @@ describe('TradeService', () => {
 
   describe('rejectTrade', () => {
     it('should reject a trade with reason', async () => {
-      const rejectedTrade = {
+      const rejectedTrade: typeof mockTrade = {
         ...mockTrade,
         status: TradeStatus.REJECTED,
         rejectionReason: 'Insufficient funds',
       };
       mockPrismaService.trade.update.mockResolvedValue(rejectedTrade);
 
-      const result = await service.rejectTrade(mockTrade.id, 'Insufficient funds');
+      const result = await service.rejectTrade(
+        mockTrade.id,
+        'Insufficient funds',
+      );
 
       expect(result.status).toBe(TradeStatus.REJECTED);
       expect(result.rejectionReason).toBe('Insufficient funds');
@@ -485,7 +488,7 @@ describe('TradeService', () => {
     });
 
     it('should handle empty rejection reason', async () => {
-      const rejectedTrade = {
+      const rejectedTrade: typeof mockTrade = {
         ...mockTrade,
         status: TradeStatus.REJECTED,
         rejectionReason: '',
@@ -502,12 +505,12 @@ describe('TradeService', () => {
       const nonExistentId = 'non-existent-id';
       mockPrismaService.trade.update.mockRejectedValue({ code: 'P2025' });
 
-      await expect(service.rejectTrade(nonExistentId, 'Test reason')).rejects.toThrow(
-        NotFoundException,
-      );
-      await expect(service.rejectTrade(nonExistentId, 'Test reason')).rejects.toThrow(
-        `Trade with ID ${nonExistentId} not found`,
-      );
+      await expect(
+        service.rejectTrade(nonExistentId, 'Test reason'),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.rejectTrade(nonExistentId, 'Test reason'),
+      ).rejects.toThrow(`Trade with ID ${nonExistentId} not found`);
     });
   });
 
@@ -547,7 +550,6 @@ describe('TradeService', () => {
 
   describe('integration scenarios', () => {
     it('should handle complete trade lifecycle', async () => {
-      // Create
       mockPrismaService.trade.create.mockResolvedValue(mockTrade);
       const createdTrade = await service.create({
         portfolioId: mockTrade.portfolioId,
@@ -557,16 +559,18 @@ describe('TradeService', () => {
         quantity: mockTrade.quantity,
       });
 
-      // Find
       mockPrismaService.trade.findUnique.mockResolvedValue(mockTrade);
       const foundTrade = await service.findOne(createdTrade.id);
 
-      // Fill
-      const filledTrade = { ...mockTrade, status: TradeStatus.FILLED, price: 150.25, filledAt: new Date() };
+      const filledTrade = {
+        ...mockTrade,
+        status: TradeStatus.FILLED,
+        price: 150.25,
+        filledAt: new Date(),
+      };
       mockPrismaService.trade.update.mockResolvedValue(filledTrade);
       const updatedTrade = await service.fillTrade(foundTrade.id, 150.25);
 
-      // Delete
       mockPrismaService.trade.delete.mockResolvedValue(filledTrade);
       await service.remove(updatedTrade.id);
 
@@ -583,9 +587,11 @@ describe('TradeService', () => {
       mockPrismaService.trade.create
         .mockResolvedValueOnce(mockTrade)
         .mockResolvedValueOnce(mockFilledTrade);
-      mockPrismaService.trade.findMany.mockResolvedValue([mockTrade, mockFilledTrade]);
+      mockPrismaService.trade.findMany.mockResolvedValue([
+        mockTrade,
+        mockFilledTrade,
+      ]);
 
-      // Simulate concurrent operations
       const [createdTrade1, createdTrade2, allTrades] = await Promise.all([
         service.create({
           portfolioId: 'portfolio-1',
@@ -608,11 +614,12 @@ describe('TradeService', () => {
       expect(createdTrade1).toBeDefined();
       expect(createdTrade2).toBeDefined();
       expect(allTrades).toHaveLength(2);
-      expect(allTrades.every(trade => trade.portfolioId === 'portfolio-1')).toBe(true);
+      expect(
+        allTrades.every((trade) => trade.portfolioId === 'portfolio-1'),
+      ).toBe(true);
     });
 
     it('should handle trade rejection workflow', async () => {
-      // Create
       mockPrismaService.trade.create.mockResolvedValue(mockTrade);
       const createdTrade = await service.create({
         portfolioId: mockTrade.portfolioId,
@@ -622,10 +629,16 @@ describe('TradeService', () => {
         quantity: mockTrade.quantity,
       });
 
-      // Reject
-      const rejectedTrade = { ...mockTrade, status: TradeStatus.REJECTED, rejectionReason: 'Invalid symbol' };
+      const rejectedTrade = {
+        ...mockTrade,
+        status: TradeStatus.REJECTED,
+        rejectionReason: 'Invalid symbol',
+      };
       mockPrismaService.trade.update.mockResolvedValue(rejectedTrade);
-      const updatedTrade = await service.rejectTrade(createdTrade.id, 'Invalid symbol');
+      const updatedTrade = await service.rejectTrade(
+        createdTrade.id,
+        'Invalid symbol',
+      );
 
       expect(updatedTrade.status).toBe(TradeStatus.REJECTED);
       expect(updatedTrade.rejectionReason).toBe('Invalid symbol');
@@ -662,13 +675,15 @@ describe('TradeService', () => {
       const fkError = new Error('Foreign key constraint failed');
       mockPrismaService.trade.create.mockRejectedValue(fkError);
 
-      await expect(service.create({
-        portfolioId: 'invalid-portfolio',
-        symbol: 'AAPL',
-        side: TradeSide.BUY,
-        type: TradeType.MARKET,
-        quantity: 100,
-      })).rejects.toThrow('Foreign key constraint failed');
+      await expect(
+        service.create({
+          portfolioId: 'invalid-portfolio',
+          symbol: 'AAPL',
+          side: TradeSide.BUY,
+          type: TradeType.MARKET,
+          quantity: 100,
+        }),
+      ).rejects.toThrow('Foreign key constraint failed');
     });
   });
 });

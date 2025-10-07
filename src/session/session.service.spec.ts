@@ -5,7 +5,6 @@ import { NotFoundException } from '@nestjs/common';
 
 describe('SessionService', () => {
   let service: SessionService;
-  let prismaService: PrismaService;
 
   const mockSession = {
     id: '1',
@@ -40,7 +39,6 @@ describe('SessionService', () => {
     }).compile();
 
     service = module.get<SessionService>(SessionService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   it('should be defined', () => {
@@ -102,14 +100,16 @@ describe('SessionService', () => {
 
   describe('removeExpired', () => {
     it('should remove expired sessions', async () => {
-      mockPrismaService.session.deleteMany.mockResolvedValue({ count: 2 });
+      mockPrismaService.session.deleteMany.mockResolvedValue({
+        count: 2,
+      } as { count: number });
 
       await service.removeExpired();
 
       expect(mockPrismaService.session.deleteMany).toHaveBeenCalledWith({
         where: {
           expiresAt: {
-            lt: expect.any(Date),
+            lt: expect.any(Date) as unknown as Date,
           },
         },
       });

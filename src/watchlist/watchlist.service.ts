@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { isPrismaErrorWithCode } from '../prisma/prisma-error.util';
 import {
   CreateWatchlistDto,
   UpdateWatchlistDto,
@@ -65,7 +66,7 @@ export class WatchlistService {
       });
       return this.mapToWatchlistResponseDto(watchlist);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Watchlist with ID ${id} not found`);
       }
       throw error;
@@ -78,7 +79,7 @@ export class WatchlistService {
         where: { id },
       });
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Watchlist with ID ${id} not found`);
       }
       throw error;
@@ -137,7 +138,7 @@ export class WatchlistService {
       });
       return this.mapToWatchlistItemResponseDto(watchlistItem);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Watchlist item with ID ${id} not found`);
       }
       throw error;
@@ -150,7 +151,7 @@ export class WatchlistService {
         where: { id },
       });
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Watchlist item with ID ${id} not found`);
       }
       throw error;

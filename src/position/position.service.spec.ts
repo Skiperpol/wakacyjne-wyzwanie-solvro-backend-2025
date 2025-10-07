@@ -1,11 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PositionService } from './position.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotFoundException } from '@nestjs/common';
 
 describe('PositionService', () => {
   let service: PositionService;
-  let prismaService: PrismaService;
 
   const mockPosition = {
     id: '1',
@@ -40,7 +38,6 @@ describe('PositionService', () => {
     }).compile();
 
     service = module.get<PositionService>(PositionService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   it('should be defined', () => {
@@ -96,7 +93,7 @@ describe('PositionService', () => {
 
   describe('closePosition', () => {
     it('should close a position with PnL', async () => {
-      const closedPosition = {
+      const closedPosition: typeof mockPosition = {
         ...mockPosition,
         closedAt: new Date(),
         pnlRealized: 1250.5,
@@ -110,7 +107,7 @@ describe('PositionService', () => {
       expect(mockPrismaService.position.update).toHaveBeenCalledWith({
         where: { id: '1' },
         data: {
-          closedAt: expect.any(Date),
+          closedAt: expect.any(Date) as unknown as Date,
           pnlRealized: 1250.5,
         },
       });

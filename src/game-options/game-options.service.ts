@@ -4,6 +4,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { isPrismaErrorWithCode } from '../prisma/prisma-error.util';
 import {
   CreateGameOptionsDto,
   UpdateGameOptionsDto,
@@ -24,7 +25,7 @@ export class GameOptionsService {
       });
       return this.mapToResponseDto(gameOptions);
     } catch (error) {
-      if (error.code === 'P2002') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2002') {
         throw new ConflictException('Game options already exist for this user');
       }
       throw error;
@@ -71,7 +72,7 @@ export class GameOptionsService {
       });
       return this.mapToResponseDto(gameOptions);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Game options with ID ${id} not found`);
       }
       throw error;
@@ -89,7 +90,7 @@ export class GameOptionsService {
       });
       return this.mapToResponseDto(gameOptions);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(
           `Game options for user ${userId} not found`,
         );
@@ -104,7 +105,7 @@ export class GameOptionsService {
         where: { id },
       });
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Game options with ID ${id} not found`);
       }
       throw error;
@@ -117,7 +118,7 @@ export class GameOptionsService {
         where: { userId },
       });
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(
           `Game options for user ${userId} not found`,
         );

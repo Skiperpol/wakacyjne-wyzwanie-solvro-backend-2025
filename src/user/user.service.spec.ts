@@ -6,7 +6,6 @@ import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 
 describe('UserService', () => {
   let service: UserService;
-  let prismaService: PrismaService;
 
   const mockUser = {
     id: 'clx1234567890',
@@ -48,9 +47,7 @@ describe('UserService', () => {
     }).compile();
 
     service = module.get<UserService>(UserService);
-    prismaService = module.get<PrismaService>(PrismaService);
 
-    // Reset all mocks before each test
     jest.clearAllMocks();
   });
 
@@ -103,9 +100,9 @@ describe('UserService', () => {
     });
 
     it('should throw ConflictException when email already exists', async () => {
-      mockPrismaService.user.create.mockRejectedValue({ 
+      mockPrismaService.user.create.mockRejectedValue({
         code: 'P2002',
-        meta: { target: ['email'] }
+        meta: { target: ['email'] },
       });
 
       await expect(service.create(validCreateUserDto)).rejects.toThrow(
@@ -357,18 +354,18 @@ describe('UserService', () => {
       const nonExistentId = 'non-existent-id';
       mockPrismaService.user.update.mockRejectedValue({ code: 'P2025' });
 
-      await expect(service.update(nonExistentId, updateUserDto)).rejects.toThrow(
-        NotFoundException,
-      );
-      await expect(service.update(nonExistentId, updateUserDto)).rejects.toThrow(
-        `User with ID ${nonExistentId} not found`,
-      );
+      await expect(
+        service.update(nonExistentId, updateUserDto),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.update(nonExistentId, updateUserDto),
+      ).rejects.toThrow(`User with ID ${nonExistentId} not found`);
     });
 
     it('should throw ConflictException when email already exists during update', async () => {
-      mockPrismaService.user.update.mockRejectedValue({ 
+      mockPrismaService.user.update.mockRejectedValue({
         code: 'P2002',
-        meta: { target: ['email'] }
+        meta: { target: ['email'] },
       });
 
       await expect(service.update(mockUser.id, updateUserDto)).rejects.toThrow(
@@ -439,9 +436,7 @@ describe('UserService', () => {
     });
 
     it('should handle cascade deletion properly', async () => {
-      // Simulate successful deletion even when user has related records
       mockPrismaService.user.delete.mockResolvedValue(mockUser);
-
       await expect(service.remove(mockUser.id)).resolves.not.toThrow();
       expect(mockPrismaService.user.delete).toHaveBeenCalledWith({
         where: { id: mockUser.id },
@@ -451,27 +446,26 @@ describe('UserService', () => {
 
   describe('mapToResponseDto', () => {
     it('should map user data correctly without passwordHash', () => {
-      // Test the private method indirectly through create
       mockPrismaService.user.create.mockResolvedValue(mockUser);
-
-      return service.create({
-        email: mockUser.email,
-        passwordHash: mockUser.passwordHash,
-        displayName: mockUser.displayName,
-      }).then((result) => {
-        expect(result).not.toHaveProperty('passwordHash');
-        expect(result.id).toBe(mockUser.id);
-        expect(result.email).toBe(mockUser.email);
-        expect(result.displayName).toBe(mockUser.displayName);
-        expect(result.createdAt).toEqual(mockUser.createdAt);
-        expect(result.updatedAt).toEqual(mockUser.updatedAt);
-      });
+      return service
+        .create({
+          email: mockUser.email,
+          passwordHash: mockUser.passwordHash,
+          displayName: mockUser.displayName,
+        })
+        .then((result) => {
+          expect(result).not.toHaveProperty('passwordHash');
+          expect(result.id).toBe(mockUser.id);
+          expect(result.email).toBe(mockUser.email);
+          expect(result.displayName).toBe(mockUser.displayName);
+          expect(result.createdAt).toEqual(mockUser.createdAt);
+          expect(result.updatedAt).toEqual(mockUser.updatedAt);
+        });
     });
   });
 
   describe('integration scenarios', () => {
     it('should handle complete user lifecycle', async () => {
-      // Create
       mockPrismaService.user.create.mockResolvedValue(mockUser);
       const createdUser = await service.create({
         email: mockUser.email,
@@ -479,16 +473,15 @@ describe('UserService', () => {
         displayName: mockUser.displayName,
       });
 
-      // Find
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       const foundUser = await service.findOne(createdUser.id);
 
-      // Update
       const updatedUserData = { ...mockUser, displayName: 'Updated Name' };
       mockPrismaService.user.update.mockResolvedValue(updatedUserData);
-      const updatedUser = await service.update(foundUser.id, { displayName: 'Updated Name' });
+      const updatedUser = await service.update(foundUser.id, {
+        displayName: 'Updated Name',
+      });
 
-      // Delete
       mockPrismaService.user.delete.mockResolvedValue(updatedUserData);
       await service.remove(updatedUser.id);
 
@@ -504,7 +497,6 @@ describe('UserService', () => {
       mockPrismaService.user.create.mockResolvedValue(mockUser);
       mockPrismaService.user.findMany.mockResolvedValue([mockUser, mockUser2]);
 
-      // Simulate concurrent operations
       const [createdUser, allUsers] = await Promise.all([
         service.create({
           email: mockUser.email,

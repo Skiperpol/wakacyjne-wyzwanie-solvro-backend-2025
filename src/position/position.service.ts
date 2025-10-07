@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { isPrismaErrorWithCode } from '../prisma/prisma-error.util';
 import {
   CreatePositionDto,
   UpdatePositionDto,
@@ -79,7 +80,7 @@ export class PositionService {
       });
       return this.mapToResponseDto(position);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Position with ID ${id} not found`);
       }
       throw error;
@@ -92,7 +93,7 @@ export class PositionService {
         where: { id },
       });
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Position with ID ${id} not found`);
       }
       throw error;
@@ -113,7 +114,7 @@ export class PositionService {
       });
       return this.mapToResponseDto(position);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Position with ID ${id} not found`);
       }
       throw error;

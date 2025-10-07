@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { isPrismaErrorWithCode } from '../prisma/prisma-error.util';
 import {
   CreateTradeDto,
   UpdateTradeDto,
@@ -70,7 +71,7 @@ export class TradeService {
       });
       return this.mapToResponseDto(trade);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Trade with ID ${id} not found`);
       }
       throw error;
@@ -83,7 +84,7 @@ export class TradeService {
         where: { id },
       });
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Trade with ID ${id} not found`);
       }
       throw error;
@@ -102,7 +103,7 @@ export class TradeService {
       });
       return this.mapToResponseDto(trade);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Trade with ID ${id} not found`);
       }
       throw error;
@@ -119,7 +120,7 @@ export class TradeService {
       });
       return this.mapToResponseDto(trade);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Trade with ID ${id} not found`);
       }
       throw error;
@@ -140,7 +141,7 @@ export class TradeService {
       });
       return this.mapToResponseDto(trade);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`Trade with ID ${id} not found`);
       }
       throw error;

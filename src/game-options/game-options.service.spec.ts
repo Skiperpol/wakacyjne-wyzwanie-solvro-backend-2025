@@ -1,11 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GameOptionsService } from './game-options.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotFoundException, ConflictException } from '@nestjs/common';
+import { ConflictException } from '@nestjs/common';
 
 describe('GameOptionsService', () => {
   let service: GameOptionsService;
-  let prismaService: PrismaService;
 
   const mockGameOptions = {
     id: '1',
@@ -43,7 +42,6 @@ describe('GameOptionsService', () => {
     }).compile();
 
     service = module.get<GameOptionsService>(GameOptionsService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   it('should be defined', () => {

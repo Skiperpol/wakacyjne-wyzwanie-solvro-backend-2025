@@ -1,11 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WatchlistService } from './watchlist.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotFoundException } from '@nestjs/common';
 
 describe('WatchlistService', () => {
   let service: WatchlistService;
-  let prismaService: PrismaService;
 
   const mockWatchlist = {
     id: '1',
@@ -52,7 +50,6 @@ describe('WatchlistService', () => {
     }).compile();
 
     service = module.get<WatchlistService>(WatchlistService);
-    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   it('should be defined', () => {

@@ -1,11 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { NotFoundException, ConflictException } from '@nestjs/common';
 
 describe('UserController', () => {
   let controller: UserController;
-  let userService: UserService;
 
   const mockUser = {
     id: '1',
@@ -36,7 +34,6 @@ describe('UserController', () => {
     }).compile();
 
     controller = module.get<UserController>(UserController);
-    userService = module.get<UserService>(UserService);
   });
 
   it('should be defined', () => {
@@ -56,7 +53,7 @@ describe('UserController', () => {
       const result = await controller.create(createUserDto);
 
       expect(result).toEqual(mockUser);
-      expect(userService.create).toHaveBeenCalledWith(createUserDto);
+      expect(mockUserService.create).toHaveBeenCalledWith(createUserDto);
     });
   });
 
@@ -68,7 +65,7 @@ describe('UserController', () => {
       const result = await controller.findAll();
 
       expect(result).toEqual(users);
-      expect(userService.findAll).toHaveBeenCalled();
+      expect(mockUserService.findAll).toHaveBeenCalled();
     });
   });
 
@@ -79,7 +76,7 @@ describe('UserController', () => {
       const result = await controller.findOne('1');
 
       expect(result).toEqual(mockUser);
-      expect(userService.findOne).toHaveBeenCalledWith('1');
+      expect(mockUserService.findOne).toHaveBeenCalledWith('1');
     });
   });
 
@@ -90,7 +87,9 @@ describe('UserController', () => {
       const result = await controller.findByEmail('test@example.com');
 
       expect(result).toEqual(mockUser);
-      expect(userService.findByEmail).toHaveBeenCalledWith('test@example.com');
+      expect(mockUserService.findByEmail).toHaveBeenCalledWith(
+        'test@example.com',
+      );
     });
   });
 
@@ -104,7 +103,7 @@ describe('UserController', () => {
       const result = await controller.update('1', updateUserDto);
 
       expect(result).toEqual(updatedUser);
-      expect(userService.update).toHaveBeenCalledWith('1', updateUserDto);
+      expect(mockUserService.update).toHaveBeenCalledWith('1', updateUserDto);
     });
   });
 
@@ -114,7 +113,7 @@ describe('UserController', () => {
 
       await controller.remove('1');
 
-      expect(userService.remove).toHaveBeenCalledWith('1');
+      expect(mockUserService.remove).toHaveBeenCalledWith('1');
     });
   });
 });

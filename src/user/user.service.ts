@@ -4,6 +4,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { isPrismaErrorWithCode } from '../prisma/prisma-error.util';
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from './dto/user.dto';
 import { User } from '@prisma/client';
 
@@ -18,7 +19,7 @@ export class UserService {
       });
       return this.mapToResponseDto(user);
     } catch (error) {
-      if (error.code === 'P2002') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2002') {
         throw new ConflictException('Email already exists');
       }
       throw error;
@@ -65,10 +66,10 @@ export class UserService {
       });
       return this.mapToResponseDto(user);
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`User with ID ${id} not found`);
       }
-      if (error.code === 'P2002') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2002') {
         throw new ConflictException('Email already exists');
       }
       throw error;
@@ -81,7 +82,7 @@ export class UserService {
         where: { id },
       });
     } catch (error) {
-      if (error.code === 'P2025') {
+      if (isPrismaErrorWithCode(error) && error.code === 'P2025') {
         throw new NotFoundException(`User with ID ${id} not found`);
       }
       throw error;

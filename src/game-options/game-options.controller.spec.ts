@@ -4,7 +4,6 @@ import { GameOptionsService } from './game-options.service';
 
 describe('GameOptionsController', () => {
   let controller: GameOptionsController;
-  let gameOptionsService: GameOptionsService;
 
   const mockGameOptions = {
     id: '1',
@@ -43,7 +42,6 @@ describe('GameOptionsController', () => {
     }).compile();
 
     controller = module.get<GameOptionsController>(GameOptionsController);
-    gameOptionsService = module.get<GameOptionsService>(GameOptionsService);
   });
 
   it('should be defined', () => {
@@ -67,7 +65,7 @@ describe('GameOptionsController', () => {
       const result = await controller.create(createGameOptionsDto);
 
       expect(result).toEqual(mockGameOptions);
-      expect(gameOptionsService.create).toHaveBeenCalledWith(
+      expect(mockGameOptionsService.create).toHaveBeenCalledWith(
         createGameOptionsDto,
       );
     });
@@ -86,7 +84,7 @@ describe('GameOptionsController', () => {
       const result = await controller.upsert('user1', updateGameOptionsDto);
 
       expect(result).toEqual(upsertedOptions);
-      expect(gameOptionsService.upsert).toHaveBeenCalledWith(
+      expect(mockGameOptionsService.upsert).toHaveBeenCalledWith(
         'user1',
         updateGameOptionsDto,
       );
@@ -100,7 +98,7 @@ describe('GameOptionsController', () => {
       const result = await controller.findByUserId('user1');
 
       expect(result).toEqual(mockGameOptions);
-      expect(gameOptionsService.findByUserId).toHaveBeenCalledWith('user1');
+      expect(mockGameOptionsService.findByUserId).toHaveBeenCalledWith('user1');
     });
   });
 });

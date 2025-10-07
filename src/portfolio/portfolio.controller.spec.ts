@@ -4,7 +4,6 @@ import { PortfolioService } from './portfolio.service';
 
 describe('PortfolioController', () => {
   let controller: PortfolioController;
-  let portfolioService: PortfolioService;
 
   const mockPortfolio = {
     id: '1',
@@ -36,7 +35,6 @@ describe('PortfolioController', () => {
     }).compile();
 
     controller = module.get<PortfolioController>(PortfolioController);
-    portfolioService = module.get<PortfolioService>(PortfolioService);
   });
 
   it('should be defined', () => {
@@ -56,7 +54,9 @@ describe('PortfolioController', () => {
       const result = await controller.create(createPortfolioDto);
 
       expect(result).toEqual(mockPortfolio);
-      expect(portfolioService.create).toHaveBeenCalledWith(createPortfolioDto);
+      expect(mockPortfolioService.create).toHaveBeenCalledWith(
+        createPortfolioDto,
+      );
     });
   });
 
@@ -68,7 +68,7 @@ describe('PortfolioController', () => {
       const result = await controller.findAll();
 
       expect(result).toEqual(portfolios);
-      expect(portfolioService.findAll).toHaveBeenCalled();
+      expect(mockPortfolioService.findAll).toHaveBeenCalled();
     });
 
     it('should return portfolios by userId when userId query provided', async () => {
@@ -78,7 +78,7 @@ describe('PortfolioController', () => {
       const result = await controller.findAll('user1');
 
       expect(result).toEqual(portfolios);
-      expect(portfolioService.findByUserId).toHaveBeenCalledWith('user1');
+      expect(mockPortfolioService.findByUserId).toHaveBeenCalledWith('user1');
     });
   });
 
@@ -90,7 +90,7 @@ describe('PortfolioController', () => {
       const result = await controller.findByUserId('user1');
 
       expect(result).toEqual(portfolios);
-      expect(portfolioService.findByUserId).toHaveBeenCalledWith('user1');
+      expect(mockPortfolioService.findByUserId).toHaveBeenCalledWith('user1');
     });
   });
 });
