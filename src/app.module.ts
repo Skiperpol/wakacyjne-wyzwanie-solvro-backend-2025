@@ -7,6 +7,7 @@ import { PositionModule } from './position/position.module';
 import { TradeModule } from './trade/trade.module';
 import { WatchlistModule } from './watchlist/watchlist.module';
 import { GameOptionsModule } from './game-options/game-options.module';
+import { BacktestModule } from './backtest/backtest.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { GameOptionsModule } from './game-options/game-options.module';
     TradeModule,
     WatchlistModule,
     GameOptionsModule,
+    BacktestModule,
   ],
   controllers: [],
   providers: [],
