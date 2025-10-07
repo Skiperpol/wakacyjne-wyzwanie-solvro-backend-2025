@@ -41,8 +41,8 @@ describe('Backtests E2E (real Binance)', () => {
       new ValidationPipe({ whitelist: true, transform: true }),
     );
     await app.init();
-    server = app.getHttpServer() as unknown as Server;
-    http = request(server as unknown as Server);
+    server = app.getHttpServer() as Server;
+    http = request.agent(server) as unknown as SuperTest<SuperTestRequest>;
     jest.setTimeout(60000);
   });
 
